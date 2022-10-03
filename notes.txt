@@ -367,4 +367,60 @@ name VARCHAR(30),
 email_id VARCHAR(40)
 );
 
+------------------------------------------------------------------------
+For implementing these type of requirements, Spring Data provides the following approaches:
+
+Query creation based on the method name
+
+Query creation using @Query annotation
+
+Query creation using @NamedQuery annotation
+
+------------------------------------------------------
+public interface TransactionRepository extends PagingAndSortingRepository<Transaction, Integer>{
+}
+// PagingAndSortingRepository in turn extends CrudRepository. So apart from accessing the methods
+// specific to PagingAndSortingRepository we can access the methods of CrudRepository too.
+// save, findAll, findById, deleteById.
+
+
+Pageable firstPagewithFiveRecords = PageRequest.of(0,5); // PageRequest is a class which implements
+// Pageable and of method is receiving two parameters, first is the page number and second parameter
+// is number of records or the page size. In findAll we are passing the reference of Pageable
+// The findAll returns an object of Page type
+// Through page object we can read the content with getContent method
+
+Page<Transaction> transactions = transactionRepository.findAll(firstPageWithFiveRecords);
+// getContent method's return type is of Iterable type which means the object which can iterated to read the data like List.
+List<Transaction> entityList = transactions.getContent();
+
+1) First get an object of Pageable through PageRequest.
+2) With the PageAndSortingRepository get an object of Page.
+3) From Page get the number of records requested in a Page.
+
+
+                    PageRequest
+    
+  Pageable<---------of(pageNumber,pageSize)  
+    |               PagingAndSorting
+    |--------------->findAll()
+    |                   |
+  Page<-----------------
+    |
+ getContent()
+    |
+   List ( the content of the Page)
+---------------------------------------------------------------------------------------------------------------
+
+Sort sort=Sort.by("name").descending();
+
+Sort sort=Sort.by("name"); // by default ascending order
+
+ Iterable<Customer> customerList=customerRepository.findAll(sort);
+ List<CustomerDTO> customerDTOList=new ArrayList();
+customerList.forEach(customer->{
+    CustomerDTO customerDTO=new CustomerDTO();
+    customerDTO.setId(customer.getId());
+    customerDTOList.add(customerDTO);
+});
 
