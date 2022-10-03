@@ -1,0 +1,370 @@
+1. Query query=em.createQuery("select c from Customer c where c.id=1");
+    
+    CustomerDTO  searchCustomer(int customerId){
+2.   Query query=em.createQuery("select c from Customer c where c.id=:id");   // named parameter :id
+     query.setParameter(id,customerId);
+
+3.  CustomerDTO  searchCustomer(int customerId, String customerName){
+    Query query=em.createQuery("select c from Customer c where c.id=?1 and c.name=?2");   // positional parameters are ?1 and ?2
+     query.setParameter(1,customerId);
+     query.setParameter(2,customerName);
+----------------------------------------------------------------------------------------------------------------------------
+
+@Repository
+public class CustomerRepositoryImpl implements CustomerRepository{
+
+ @PersistenceContext
+     private EntityManager entityManager;
+
+
+
+
+}
+
+
+   Customer customer=new Customer(); // transient --------------->  no record mapped 
+   entityManager.persist(customer);  // managed  ----------------->  C001 Ram ram@gmail.com
+
+   Customer customer2=entityManager.find(Customer.class,1);
+   customer.setEmailId("abc@gmail.com);      //managed -------------> C001 Ram abc@gmail.com
+
+   Customer customer2=entityManager.find(Customer.class,1);
+   entityManager.remove(customer2);    // managed and will remove/delete record from the table.
+     
+
+   Customer customer2=entityManager.find(Customer.class,1);  // managed
+   entityManager.detach(customer2); // the reference of customer2 is currently not associated with corresponding record in the table.
+    // So if you update the object in the java code, it wont reflect in the record of the table.
+-------------------------------------------------------------------------------------------------------------------------
+Spring Data    
+Such a framework which helps in easy and fast development of persistence layer is Spring Data.
+-------------------------------------------------------------------------------------------------------------
+
+In case of Spring ORM for repository.
+
+public interface CustomerRepository {
+
+   void addCustomer(CustomerDTO customerDTO);
+   CustomerDTO findCustomer(int id);
+   void deleteCustomer(int id);
+   void updateCustomer(int id, String updateAddress);
+ }
+
+public class CustomerRepositoryImpl implements CustomerRepository{
+
+  @PersistenceContext
+  private EntityManager em;
+    void addCustomer(CustomerDTO customerDTO){
+      Customer customer=new Customer();
+      customer.setId(customerDTO.getId());
+      // with all the details
+      em.persist(customer); 
+ 
+}
+
+   CustomerDTO findCustomer(int id){
+   Customer customer=em.find(Customer.class,id); 
+   CustomerDTO customerDTO=new CustomerDTO();
+   customerDTO.setId(customer.getId());
+   customerDTO.setName(customer.getName());
+
+   }
+
+
+
+}
+
+In SpringData:
+
+
+public interface CustomerRepository extends CRUDRepository<Customer,Integer>{}
+
+// No implementaion of CustomerRepository from the coder's sider. 
+// An implemented class for the Repository is getting created by the framework. 
+
+public class CustomerServiceImpl implements CustomerService {
+
+   @Autowired
+   private CustomerRepository customerRepository;
+
+   public void addCustomer(CustomerDTO customerDTO){
+    Customer customer=new Customer();
+    customer.setId(customerDTO.getId());
+    customerRepository.save(customer);
+ }
+
+  CustomerDTO findCustomer(int id){
+  /* Optional<Customer> optionalCustomer=customerRepository.findById(id);
+   Customer customer=optionalCustomer.get(); */
+    
+   Customer customer=customerRepository.findById(id).get();
+
+   CustomerDTO customerDTO=new CustomerDTO();
+   customerDTO.setId(customer.getId());
+   customerDTO.setName(customer.getName());
+   return customerDTO;
+   }
+
+}
+
+-----------------------------------------------------------------------------------
+
+public class MyClass implements Iterable {}  // The class which is implementing Iterable interace can be used to 
+get an object Iterator
+
+public class Main {
+    public static void main(String args[]) {
+    MyClass myClass=new MyClass();
+    Iterator it=myClass.iterator();   // To iterate through the Iterable object we create an object of Iterator
+    while(it.hasNext()){
+    System.out.println(it.next());
+    }
+ }
+}
+-------------------------------------------------------------------------------------------------------------------------------------
+
+List<Integer> listOfIds=new ArrayList<>();
+ listOfIds.add(1);
+ listOfIds.add(3);
+ listOfIds.add(10);
+ Iterator it=listOfIds.iterator();
+ customerRepository.deleteAll(listOfIds); 
+------------------------------------------------------
+
+List<Customer> customerList=new ArrayList<>();
+Customer customer1=new Customer(1,"Ram");
+Customer customer2=new Customer(2,"Ashok");
+customerList.add(customer1);
+customerList.add(customer2);
+customerRepository.saveAll(customerList);
+---------------------------------------------------------------------------------------------------------
+save()
+deleteById()
+findAll()
+findById()
+------------------------------------------------------------------------------------------------------------
+<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+           <groupId>mysql</groupId>
+           <artifactId>mysql-connector-java</artifactId>
+       </dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+	</dependencies>
+---------------------------------------------------------------------------------------------------------------------------
+Let us create the packages as required:-
+com.myshop
+com.myshop.service
+com.myshop.entity
+com.myshop.dto
+com.myshop.repository
+com.myshop.exception
+com.myshop.utility
+------------------------------------------------------------------------------------------------------------------------------
+
+package com.myshop.entity;
+
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="customer_details")
+public class Customer {
+@Id
+@Column(name="custId")
+private int id;
+private String name; // the corresponding
+// column name will be name in the table
+// customer_details
+private String emailId;  // the corresponding
+// column name will be email_id
+
+public Customer() {
+	super();
+	// TODO Auto-generated constructor stub
+}
+public Customer(int id, String name, String emailId) {
+	super();
+	this.id = id;
+	this.name = name;
+	this.emailId = emailId;
+}
+
+
+
+
+
+public int getId() {
+	return id;
+}
+
+public void setId(int id) {
+	this.id = id;
+}
+public String getName() {
+	return name;
+}
+public void setName(String name) {
+	this.name = name;
+}
+public String getEmailId() {
+	return emailId;
+}
+public void setEmailId(String emailId) {
+	this.emailId = emailId;
+}
+
+
+@Override
+public int hashCode() {
+	return Objects.hash(emailId, id, name);
+}
+@Override
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	Customer other = (Customer) obj;
+	return Objects.equals(emailId, other.emailId) && id == other.id && Objects.equals(name, other.name);
+}
+@Override
+public String toString() {
+	return "Customer [id=" + id + ", name=" + name + ", emailId=" + emailId + "]";
+}
+
+
+
+
+}
+---------------------------------------------
+package com.myshop.dto;
+
+import java.util.Objects;
+
+
+
+public class CustomerDTO {
+
+private int id;
+private String name; // the corresponding
+// column name will be name in the table
+// customer_details
+private String emailId;  // the corresponding
+// column name will be email_id
+
+public CustomerDTO() {
+	super();
+	// TODO Auto-generated constructor stub
+}
+public CustomerDTO(int id, String name, String emailId) {
+	super();
+	this.id = id;
+	this.name = name;
+	this.emailId = emailId;
+}
+
+
+
+
+
+public int getId() {
+	return id;
+}
+
+public void setId(int id) {
+	this.id = id;
+}
+public String getName() {
+	return name;
+}
+public void setName(String name) {
+	this.name = name;
+}
+public String getEmailId() {
+	return emailId;
+}
+public void setEmailId(String emailId) {
+	this.emailId = emailId;
+}
+
+
+@Override
+public int hashCode() {
+	return Objects.hash(emailId, id, name);
+}
+@Override
+public boolean equals(Object obj) {
+	if (this == obj)
+		return true;
+	if (obj == null)
+		return false;
+	if (getClass() != obj.getClass())
+		return false;
+	CustomerDTO other = (CustomerDTO) obj;
+	return Objects.equals(emailId, other.emailId) && id == other.id && Objects.equals(name, other.name);
+}
+@Override
+public String toString() {
+	return "Customer [id=" + id + ", name=" + name + ", emailId=" + emailId + "]";
+}
+
+
+
+
+}
+-------------------------------------------------------------
+package com.myshop.repository;
+
+import org.springframework.data.repository.CrudRepository;
+
+import com.myshop.entity.Customer;
+
+public interface CustomerRepository extends CrudRepository<Customer, Integer> {
+
+}
+------------------------------------------------------------------------------------------------------------
+DROP DATABASE IF EXISTS customerDB;
+CREATE DATABASE customerDB;
+USE customerDB;
+
+CREATE TABLE customer_details(
+cust_id INT PRIMARY KEY,
+name VARCHAR(30),
+email_id VARCHAR(40)
+);
+
+
